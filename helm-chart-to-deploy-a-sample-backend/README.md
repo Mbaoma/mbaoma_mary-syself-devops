@@ -53,3 +53,50 @@ helm uninstall syself
 ```
 
 [Helm Documentation](https://helm.sh/docs)
+
+## Helm Chart Components Explanation
+- **namespace**: defines where the application is deployed.
+- **replicaCount**: should be set to a default value of 3 for high availability.
+- **image**: I used nginx but users can use any custom image name or define a template such as ```image-repo/image-name```.
+- **tag**: define your image's tag here, or use a place holder which you can change using a bash script in your CI/CD pipeline.
+- **service.yaml**: by default all nodes will be deployed as serviceType of ```ClusterIP```, but users can change this.
+- **ingress.yaml**: users can configure this to expose apps externally.
+- **Resource Limits**: users can configure these to efficiently use resources.
+- **Node Tolerations**: users should set this up, so pods are provisioned according to business needs.
+
+## Big Picture
+For a full implementation, I will setup a CI/CD pipeline which will have two stages - build stage and deploy stage. ```build``` stage will do the following:
+- run tests
+- build a container image of my app
+- push the container image to an image repository such as Elastic Container Registry (ECR)
+
+While the ```deploy``` stage will:
+- authenticate to my Kubernetes cluster
+- install helm
+- deploy my newly built image (from build stage) to my cluster according to my customized ```value.yaml``` chart in my app's repository.
+
+I will conclude my cluster's configuration by setting up:
+- SSL (for secure connections)
+- Ingress
+- auto scaling (to automatically scale up to create more pods when certain CPU or memory usage conditions are met)
+- a monitoring stack (install helm Charts of Grafana, Prometheus, or any monitoring tool of choice)
+- Hashicorp Vault for more secure app secrets (environment variables) management and storage
+
+## Deploying a Database
+I will use a managed database service like Amazon RDS (AWS RDS) or Google Cloud SQL, as they offer the following:
+- **High Availability**: they provide built-in High Availability (HA) configurations, like multiple availability zones (multi-AZ) deployments.
+- **Automatic Backups**: providers like Amazon RDS have built-in automated backups.
+- **Scalability**: they easily scale up or down based on demand.
+- **Security**: they offer enhanced security features like managed access (using IAM), encryption at rest and in transit, automated patching.
+
+## Tools
+I will use:
+- Terraform to define IT assets (Kubernetes Cluster, database, storage buckets etc) and apply those assets in the cloud ensuring consistent, version-controlled, and easy to manage deployments
+- Helm to manage Kubernetes resources and ensure applications are deployed with the correct configuration.
+
+## Summary
+I took this deployment approach for the following reasons:
+- **Resilience**: cloud managed services offer better resilience by default.
+- It reduces operational overhead as the cloud provider handles many routine tasks like patching software giving my team more time to focus on improving and developing core business features.
+
+The Helm Chart and database deployment approach provide a production-ready application deployment in Kubernetes - enabling high availability and scalability.
